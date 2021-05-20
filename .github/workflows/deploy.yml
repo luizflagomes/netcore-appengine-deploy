@@ -1,0 +1,22 @@
+name: Deployment
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+          version: '275.0.0'
+          service_account_email: ${{ secrets.GCLOUD_EMAIL }}
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+    - name: Define o projeto
+      run: gcloud config set project ${{ secrets.PROJECT_ID }}
+    - name: Instala as dependências e realiza o build
+      run: dotnet publish -c release -o publish
+    - name: Deploying
+      run: gcloud app deploy "publish/app.yaml" --quiet --version v1
